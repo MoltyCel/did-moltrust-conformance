@@ -1,0 +1,17 @@
+{
+  "name": "a well-formed identifier nobody registered is not found [driver]",
+  "description": "did:moltrust:0000000000000000 against the driver.",
+  "section_ref": "4.2",
+  "check": "resolve",
+  "target": "driver",
+  "input": {
+    "did": "did:moltrust:0000000000000000"
+  },
+  "expected": {
+    "result": "NOT_FOUND",
+    "http_status": 404,
+    "reason_code": "notFound"
+  },
+  "rationale": "A conformant identifier that was never registered is absent, not malformed. Saying invalid here would send an implementer to check their string instead of their registration.",
+  "id": "did-resolve-a-well-formed-identifier-nobody-register-driver"
+}

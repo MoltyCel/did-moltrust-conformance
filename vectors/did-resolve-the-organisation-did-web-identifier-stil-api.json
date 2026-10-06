@@ -1,0 +1,17 @@
+{
+  "name": "the organisation did:web identifier still resolves",
+  "description": "did:web:api.moltrust.ch, the root the registry controls.",
+  "section_ref": "4.2",
+  "check": "resolve",
+  "target": "api",
+  "input": {
+    "did": "did:web:api.moltrust.ch"
+  },
+  "expected": {
+    "result": "RESOLVES",
+    "http_status": 200,
+    "reason_code": null
+  },
+  "rationale": "The registry serves did:web for its own root. This vector is here so a change to the did:moltrust branches cannot quietly take did:web with it.",
+  "id": "did-resolve-the-organisation-did-web-identifier-stil-api"
+}

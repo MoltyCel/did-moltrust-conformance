@@ -1,0 +1,17 @@
+{
+  "name": "did:aps is refused as a foreign method",
+  "description": "did:aps:ef8bbf57911681e4a2965ee6 is not a did:moltrust identifier — a peer ecosystem we bridge to but do not resolve.",
+  "section_ref": "4.2",
+  "check": "resolve",
+  "target": "api",
+  "input": {
+    "did": "did:aps:ef8bbf57911681e4a2965ee6"
+  },
+  "expected": {
+    "result": "UNSUPPORTED_METHOD",
+    "http_status": 400,
+    "reason_code": "unsupported_method"
+  },
+  "rationale": "An unknown method and a malformed identifier of a known method are different problems and must not share an answer.",
+  "id": "did-resolve-did-aps-is-refused-as-a-foreign-method-api"
+}

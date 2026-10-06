@@ -1,0 +1,15 @@
+{
+  "name": "well-formed identifier: all f, still sixteen hex",
+  "description": "did:moltrust:ffffffffffffffff matches [0-9a-f]{16}.",
+  "section_ref": "2.2",
+  "check": "syntax",
+  "target": "none",
+  "input": {
+    "did": "did:moltrust:ffffffffffffffff"
+  },
+  "expected": {
+    "result": "CONFORMS"
+  },
+  "rationale": "Section 2.2 defines method-specific-id := [0-9a-f]{16}. This identifier is all f, still sixteen hex and therefore conforms.",
+  "id": "did-syntax-well-formed-identifier-all-f-still-sixte"
+}

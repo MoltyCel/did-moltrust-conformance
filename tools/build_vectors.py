@@ -11,6 +11,7 @@ that fails today carries known_deviation and the register says why.
 import hashlib
 import json
 import pathlib
+import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -46,20 +47,58 @@ SYNTAX_BAD = [
     ("0123-456789abcdef", "a hyphen inside the identifier"),
 ]
 
+# The method comes first in the name, because that is what distinguishes these
+# three from each other and an id is derived from the name.
 FOREIGN = [
-    ("did:example:0123456789abcdef", "a method this registry does not serve"),
-    ("did:key:z6MkhaXgBZDvotDkL5257faiz", "did:key"),
-    ("did:aps:ef8bbf57911681e4a2965ee6", "did:aps, a peer ecosystem"),
+    ("did:example", "did:example:0123456789abcdef",
+     "the method reserved for examples"),
+    ("did:key", "did:key:z6MkhaXgBZDvotDkL5257faiz",
+     "a method with no registry behind it"),
+    ("did:aps", "did:aps:ef8bbf57911681e4a2965ee6",
+     "a peer ecosystem we bridge to but do not resolve"),
 ]
 
 vectors = []
-n = 0
+_ids = {}
+
+
+def slug(text, limit=40):
+    """A stable, readable handle. Only what a reader would type.
+
+    The target is stripped here and appended by add(), so truncation can never
+    eat the part that distinguishes two vectors. The first version cut the whole
+    name at 52 characters and lost exactly that.
+    """
+    s = text.lower()
+    for noise in ("did:moltrust:", "[api]", "[driver]", "[", "]"):
+        s = s.replace(noise, "")
+    s = re.sub(r"[^a-z0-9]+", "-", s)
+    return re.sub(r"-{2,}", "-", s).strip("-")[:limit].rstrip("-")
 
 
 def add(**kw):
-    global n
-    n += 1
-    kw["id"] = f"did-vector-{n:03d}"
+    """Derive the id from the check, the name and the target, never from the
+    position.
+
+    Three vectors were inserted on 2026-10-06 and the deployment vector moved
+    from did-vector-032 to did-vector-035, which invalidated a register entry
+    and a report naming the old number. An id must change only when the vector
+    does.
+    """
+    parts = [f"did-{kw['check']}", slug(kw["name"])]
+    target = kw.get("target", "none")
+    if target not in (None, "none"):
+        parts.append(target)
+    if kw.get("path_form") == "encoded":
+        parts.append("encoded")
+    vid = "-".join(parts)
+    if vid in _ids:
+        raise SystemExit(
+            f"zwei Vektoren ergeben dieselbe id {vid!r}:\n"
+            f"  {_ids[vid]!r}\n  {kw['name']!r}\n"
+            "Namen unterscheiden, nicht die id von Hand setzen.")
+    _ids[vid] = kw["name"]
+    kw["id"] = vid
     vectors.append(kw)
     return kw
 
@@ -168,9 +207,9 @@ for title, did, sec, result, per_target, why, devs in RESOLVE_CASES:
             kw["known_deviation"] = devs[tgt]
         add(**kw)
 
-for did, why in FOREIGN:
-    add(name=f"a foreign method is refused as such: {why}",
-        description=f"{did} is not a did:moltrust identifier.",
+for method, did, why in FOREIGN:
+    add(name=f"{method} is refused as a foreign method",
+        description=f"{did} is not a did:moltrust identifier — {why}.",
         section_ref="4.2", check="resolve", target="api",
         input={"did": did},
         expected={"result": "UNSUPPORTED_METHOD", "http_status": 400,
@@ -260,15 +299,12 @@ add(name="the running driver behaves like the version it reports",
 OUT.mkdir(exist_ok=True)
 
 
-def slug(v):
-    return v["name"].lower().replace(":", "").replace(",", "").replace("'", "") \
-        .replace("(", "").replace(")", "").replace(" ", "-")[:58].strip("-")
-
-
 def main():
     want = {}
     for v in vectors:
-        want[f"{v['id']}-{slug(v)}.json"] = json.dumps(v, indent=2, ensure_ascii=False) + "\n"
+        # The file is named by the id, so a report that names one leads straight
+        # to the file.
+        want[f"{v['id']}.json"] = json.dumps(v, indent=2, ensure_ascii=False) + "\n"
 
     if "--check" in sys.argv:
         have = {p.name: p.read_text() for p in OUT.glob("*.json")}
