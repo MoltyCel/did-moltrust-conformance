@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/MoltyCel/did-moltrust-conformance/schema/vector-schema.json",
+  "title": "did:moltrust Conformance Vector",
+  "description": "One executable check against the published did:moltrust method specification. The specification is HTML at https://moltrust.ch/did-method-spec.html; section_ref names the section a vector is derived from, so a reader can go from a failure to the sentence it contradicts.",
+  "type": "object",
+  "required": ["id", "name", "description", "section_ref", "check", "input", "expected", "rationale"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^did-vector-[0-9]{3}$"
+    },
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string", "minLength": 1 },
+    "section_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Section of the method specification, e.g. \"2.2\" or \"4.2\"."
+    },
+    "check": {
+      "type": "string",
+      "enum": ["syntax", "derivation", "resolve", "bridge"],
+      "description": "syntax = the identifier string alone decides, no network. derivation = the identifier must follow from a public key. resolve = a live request to the registry or the Universal Resolver driver. bridge = section 6, the cross-ecosystem bridge."
+    },
+    "target": {
+      "type": "string",
+      "enum": ["none", "api", "driver"],
+      "default": "none",
+      "description": "What answers. 'none' for a check that needs no service. A vector names exactly one target, so a failure cannot be excused by a register entry that belongs to the other one."
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "did": { "type": "string" },
+        "public_key_hex": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Ed25519 public key, 32 bytes as lowercase hex, for a derivation vector."
+        },
+        "external_did": { "type": "string" },
+        "body": { "type": "object" }
+      }
+    },
+    "expected": {
+      "type": "object",
+      "required": ["result"],
+      "additionalProperties": false,
+      "properties": {
+        "result": {
+          "type": "string",
+          "enum": ["CONFORMS", "RESOLVES", "NOT_FOUND", "INVALID_DID", "UNSUPPORTED_METHOD"],
+          "description": "CONFORMS for a syntax or derivation vector that should hold. The other four are resolution outcomes."
+        },
+        "http_status": { "type": ["integer", "null"], "minimum": 100, "maximum": 599 },
+        "reason_code": {
+          "type": ["string", "null"],
+          "description": "The machine-readable code the answer must carry: invalid_did, unsupported_method, did_not_found for the API; invalidDid, notFound, methodNotSupported for the driver."
+        }
+      }
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Why the specification requires this outcome. A failure should be readable without opening the spec."
+    },
+    "known_deviation": {
+      "type": "string",
+      "description": "Key into deviations.json. Present when the vector is expected to fail today; the runner reports it and does not fail the run."
+    }
+  }
+}

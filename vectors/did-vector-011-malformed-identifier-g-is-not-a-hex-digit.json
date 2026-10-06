@@ -1,0 +1,15 @@
+{
+  "name": "malformed identifier: g is not a hex digit",
+  "description": "did:moltrust:'0123456789abcdeg' does not match [0-9a-f]{16}.",
+  "section_ref": "2.2",
+  "check": "syntax",
+  "target": "none",
+  "input": {
+    "did": "did:moltrust:0123456789abcdeg"
+  },
+  "expected": {
+    "result": "INVALID_DID"
+  },
+  "rationale": "Section 2.2 defines method-specific-id := [0-9a-f]{16}. This identifier fails because of g is not a hex digit, so it is not a did:moltrust identifier at all.",
+  "id": "did-vector-011"
+}

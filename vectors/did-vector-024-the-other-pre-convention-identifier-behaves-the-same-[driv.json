@@ -1,0 +1,18 @@
+{
+  "name": "the other pre-convention identifier behaves the same [driver]",
+  "description": "did:moltrust:vcone against the driver.",
+  "section_ref": "2.2",
+  "check": "resolve",
+  "target": "driver",
+  "input": {
+    "did": "did:moltrust:vcone"
+  },
+  "expected": {
+    "result": "INVALID_DID",
+    "http_status": 400,
+    "reason_code": "invalidDid"
+  },
+  "rationale": "Two rows predate the 16-hex convention. Both must answer the same way, so neither becomes a special case.",
+  "known_deviation": "deployment::the public resolver runs a third codebase",
+  "id": "did-vector-024"
+}

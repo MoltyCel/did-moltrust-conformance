@@ -1,0 +1,246 @@
+{
+  "created": "2026-10-06T18:00:29+00:00",
+  "entries": {
+    "deployment::the public resolver runs a third codebase": {
+      "check": "deployment",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "did-conformance",
+      "status": "open",
+      "what": "the public resolver runs a third codebase",
+      "where": "moltrust-uresolver.service, cwd /home/moltstack/driver-did-moltrust, nginx uresolver.moltrust.ch -> 127.0.0.1:8168",
+      "why": "moltrust-uresolver.service runs node server.js from ~/driver-did-moltrust, a repository that never published an image, while the published image comes from uni-resolver-driver-did-moltrust/index.js. The two answer differently for a malformed identifier: the deployed service says notFound, the published 1.0.0 image said internalError, and 1.1.0 says invalidDid. The fix shipped in 1.1.0 is in neither running thing."
+    },
+    "derivation::identifiers are not derived from the key": {
+      "check": "derivation",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "did-conformance",
+      "status": "open",
+      "what": "identifiers are not derived from the key",
+      "where": "app/main.py:1584, 1906, 2025, 4398, 5062, 6114, 11034 in moltrust-api",
+      "why": "Section 2.2 requires the method-specific identifier to be the first 8 bytes of SHA-256 over the agent's Ed25519 public key. All seven places that mint a DID use uuid.uuid4().hex[:16], so the shape conforms and the derivation does not. This affects every one of the 532 registered DIDs, and /identity/register-pop has the public key in hand and still does not use it."
+    },
+    "ext_::DID_PATTERN accepts a prefix the specification does not define": {
+      "check": "syntax",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "did-conformance",
+      "status": "open",
+      "what": "DID_PATTERN accepts a prefix the specification does not define",
+      "where": "app/main.py:1015 in moltrust-api",
+      "why": "DID_PATTERN allows did:moltrust:ext_ plus 16 hex. Section 2.2 defines no prefix and section 6 describes the bridge without one. One row uses it, did:moltrust:ext_516a656bafa39e5c, while 18 of the 19 rows in did_bridges map to a conformant identifier. Open decision: the prefix leaves the pattern, or it enters the specification."
+    },
+    "keys-symmetry::kid in did.json without a JWK: did:web:api.moltrust.ch#key-ed25519": {
+      "check": "keys-symmetry",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "artefact-check",
+      "status": "open",
+      "what": "kid in did.json without a JWK: did:web:api.moltrust.ch#key-ed25519",
+      "where": "https://api.moltrust.ch/.well-known/did.json",
+      "why": "did.json names this verification method for assertionMethod and authentication, and jwks.json publishes no key under that kid, so a verifier that follows the DID document cannot obtain the key it is told to use."
+    },
+    "keys-symmetry::kid in jwks.json without a verification method: did:web:moltrust.ch#moltguard-key-1": {
+      "check": "keys-symmetry",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "artefact-check",
+      "status": "open",
+      "what": "kid in jwks.json without a verification method: did:web:moltrust.ch#moltguard-key-1",
+      "where": "https://api.moltrust.ch/.well-known/jwks.json",
+      "why": "This kid belongs to did:web:moltrust.ch, a different subject from did:web:api.moltrust.ch whose document is served here, so it could not appear in that document at all; it is published from the wrong place."
+    },
+    "keys-symmetry::kid in jwks.json without a verification method: moltrust-gateway-v1": {
+      "check": "keys-symmetry",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "artefact-check",
+      "status": "open",
+      "what": "kid in jwks.json without a verification method: moltrust-gateway-v1",
+      "where": "https://api.moltrust.ch/.well-known/jwks.json",
+      "why": "jwks.json publishes this as use=sig while the DID document does not declare it, so a signature made with it is unverifiable for anyone who starts from the DID document."
+    },
+    "keys-symmetry::kid in jwks.json without a verification method: moltrust-registry-2026-v1": {
+      "check": "keys-symmetry",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "artefact-check",
+      "status": "open",
+      "what": "kid in jwks.json without a verification method: moltrust-registry-2026-v1",
+      "where": "https://api.moltrust.ch/.well-known/jwks.json",
+      "why": "Same shape as moltrust-gateway-v1: published as a signing key, absent from the DID document."
+    },
+    "spec::section 6 omits the X-API-Key the endpoint requires": {
+      "check": "bridge",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": false,
+      "source": "did-conformance",
+      "status": "open",
+      "what": "section 6 omits the X-API-Key the endpoint requires",
+      "where": "section 6 of the method specification",
+      "why": "Section 6 shows POST /identity/bridge-simple with Content-Type only, while the endpoint requires X-API-Key and answers 401 without it. Sections 4.1, 4.3 and 4.4 do show the header, so the omission is in section 6 alone."
+    },
+    "spec::the DID document does not carry deactivated": {
+      "check": "resolve",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "did-conformance",
+      "status": "open",
+      "what": "the DID document does not carry deactivated",
+      "where": "_build_did_document in app/main.py, section 4.4 of the specification",
+      "why": "Section 4.4 states that on deactivation the DID document is marked deactivated: true. The document of a revoked agent carries no such member; revocation lives in agents.revoked_at and surfaces through /identity/verify, so a W3C resolver sees a revoked agent as a valid one. Checked live against did:moltrust:347a460acae84446, revoked 2026-09-20."
+    },
+    "urls-resolve::URL named publicly answers 404: https://api.moltrust.ch/identity": {
+      "check": "urls-resolve",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "artefact-check",
+      "status": "open",
+      "what": "URL named publicly answers 404: https://api.moltrust.ch/identity",
+      "where": null,
+      "why": "Cause not established: a path prefix named in an artefact without a route behind it."
+    },
+    "urls-resolve::URL named publicly answers 404: https://api.moltrust.ch/identity/revoke": {
+      "check": "urls-resolve",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "artefact-check",
+      "status": "open",
+      "what": "URL named publicly answers 404: https://api.moltrust.ch/identity/revoke",
+      "where": "app/main.py:7346 in moltrust-api, section 4.4 of the method specification",
+      "why": "Section 4.4 documents the path without the DID segment and the DID in the body; the route is POST /identity/revoke/{did} with the DID in the path, so the capability exists and the documented address does not."
+    },
+    "urls-resolve::URL named publicly answers 404: https://api.moltrust.ch/identity/rotate-key": {
+      "check": "urls-resolve",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "artefact-check",
+      "status": "open",
+      "what": "URL named publicly answers 404: https://api.moltrust.ch/identity/rotate-key",
+      "where": "section 4.3 of the method specification",
+      "why": "Section 4.3 describes key rotation, a revoked marker on the old key and a revokedDate in the DID document; none of it exists — no route in app/, nothing in the OpenAPI document, and the DID document carries one key."
+    },
+    "urls-resolve::URL named publicly answers 404: https://api.moltrust.ch/reputation": {
+      "check": "urls-resolve",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "artefact-check",
+      "status": "open",
+      "what": "URL named publicly answers 404: https://api.moltrust.ch/reputation",
+      "where": null,
+      "why": "Cause not established: a path prefix named in an artefact without a route behind it."
+    },
+    "urls-resolve::URL named publicly answers 404: https://moltrust.ch/did-method-spec": {
+      "check": "urls-resolve",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "artefact-check",
+      "status": "open",
+      "what": "URL named publicly answers 404: https://moltrust.ch/did-method-spec",
+      "where": "/var/www/html/did-method-spec.html",
+      "why": "The specification is served at /did-method-spec.html; the extensionless form is named somewhere in a published artefact and has no redirect."
+    },
+    "urls-resolve::URL named publicly answers 404: https://moltrust.ch/extensions/aae/v1": {
+      "check": "urls-resolve",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "artefact-check",
+      "status": "open",
+      "what": "URL named publicly answers 404: https://moltrust.ch/extensions/aae/v1",
+      "where": "/var/www/html/.well-known/agent-card.json",
+      "why": "The agent card advertises extension URIs under which nothing is served. The card itself was fetched 533 times in the retained nginx logs and the URIs three times, one of them by an external crawler (Reflectionbot) that got a 404."
+    },
+    "urls-resolve::URL named publicly answers 404: https://moltrust.ch/extensions/caep/v1": {
+      "check": "urls-resolve",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "artefact-check",
+      "status": "open",
+      "what": "URL named publicly answers 404: https://moltrust.ch/extensions/caep/v1",
+      "where": "/var/www/html/.well-known/agent-card.json",
+      "why": "The agent card advertises extension URIs under which nothing is served. The card itself was fetched 533 times in the retained nginx logs and the URIs three times, one of them by an external crawler (Reflectionbot) that got a 404."
+    },
+    "urls-resolve::URL named publicly answers 404: https://moltrust.ch/extensions/discovery-surfaces/v1": {
+      "check": "urls-resolve",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "artefact-check",
+      "status": "open",
+      "what": "URL named publicly answers 404: https://moltrust.ch/extensions/discovery-surfaces/v1",
+      "where": "/var/www/html/.well-known/agent-card.json",
+      "why": "The agent card advertises extension URIs under which nothing is served. The card itself was fetched 533 times in the retained nginx logs and the URIs three times, one of them by an external crawler (Reflectionbot) that got a 404."
+    },
+    "urls-resolve::URL named publicly answers 404: https://moltrust.ch/extensions/erc8004/v1": {
+      "check": "urls-resolve",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "artefact-check",
+      "status": "open",
+      "what": "URL named publicly answers 404: https://moltrust.ch/extensions/erc8004/v1",
+      "where": "/var/www/html/.well-known/agent-card.json",
+      "why": "The agent card advertises extension URIs under which nothing is served. The card itself was fetched 533 times in the retained nginx logs and the URIs three times, one of them by an external crawler (Reflectionbot) that got a 404."
+    },
+    "urls-resolve::URL named publicly answers 404: https://moltrust.ch/extensions/registration/v1": {
+      "check": "urls-resolve",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "artefact-check",
+      "status": "open",
+      "what": "URL named publicly answers 404: https://moltrust.ch/extensions/registration/v1",
+      "where": "/var/www/html/.well-known/agent-card.json",
+      "why": "The agent card advertises extension URIs under which nothing is served. The card itself was fetched 533 times in the retained nginx logs and the URIs three times, one of them by an external crawler (Reflectionbot) that got a 404."
+    },
+    "urls-resolve::URL named publicly answers 404: https://moltrust.ch/extensions/trust-score/v1": {
+      "check": "urls-resolve",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "artefact-check",
+      "status": "open",
+      "what": "URL named publicly answers 404: https://moltrust.ch/extensions/trust-score/v1",
+      "where": "/var/www/html/.well-known/agent-card.json",
+      "why": "The agent card advertises extension URIs under which nothing is served. The card itself was fetched 533 times in the retained nginx logs and the URIs three times, one of them by an external crawler (Reflectionbot) that got a 404."
+    },
+    "urls-resolve::URL named publicly answers 404: https://moltrust.ch/extensions/x402-payment/v1": {
+      "check": "urls-resolve",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "artefact-check",
+      "status": "open",
+      "what": "URL named publicly answers 404: https://moltrust.ch/extensions/x402-payment/v1",
+      "where": "/var/www/html/.well-known/agent-card.json",
+      "why": "The agent card advertises extension URIs under which nothing is served. The card itself was fetched 533 times in the retained nginx logs and the URIs three times, one of them by an external crawler (Reflectionbot) that got a 404."
+    },
+    "urls-resolve::URL named publicly answers 404: https://moltrust.ch/techspec": {
+      "check": "urls-resolve",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "artefact-check",
+      "status": "open",
+      "what": "URL named publicly answers 404: https://moltrust.ch/techspec",
+      "where": null,
+      "why": "A published artefact names this address and nothing is served there. Cause not established: whether the document moved or was never published at this path is unverified."
+    },
+    "urls-resolve::URL named publicly answers 404: https://moltrust.ch/whitepaper": {
+      "check": "urls-resolve",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "artefact-check",
+      "status": "open",
+      "what": "URL named publicly answers 404: https://moltrust.ch/whitepaper",
+      "where": null,
+      "why": "A published artefact names this address and nothing is served there. Cause not established: whether the document moved or was never published at this path is unverified."
+    },
+    "urls-resolve::URL named publicly answers 404: https://w3c-ccg.github.io/di-eddsa-2020/": {
+      "check": "urls-resolve",
+      "first_seen": "2026-10-06T18:00:29+00:00",
+      "observable": true,
+      "source": "artefact-check",
+      "status": "open",
+      "what": "URL named publicly answers 404: https://w3c-ccg.github.io/di-eddsa-2020/",
+      "where": "section 3 of the method specification",
+      "why": "An external specification we cite has moved or been withdrawn at that address. Ours to correct, since we are the ones naming it."
+    }
+  },
+  "note": "Register bekannter Abweichungen. Ein Eintrag mit status open wird gemeldet und bricht keinen Lauf ab. Verschwindet die Abweichung, wird das gemeldet und der Eintrag geschlossen. Ein Befund ohne Eintrag bricht den Lauf ab."
+}

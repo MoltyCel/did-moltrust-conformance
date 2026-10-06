@@ -1,0 +1,15 @@
+{
+  "name": "malformed identifier: uppercase; section 2.2 says lowercase",
+  "description": "did:moltrust:'ABCDEF0123456789' does not match [0-9a-f]{16}.",
+  "section_ref": "2.2",
+  "check": "syntax",
+  "target": "none",
+  "input": {
+    "did": "did:moltrust:ABCDEF0123456789"
+  },
+  "expected": {
+    "result": "INVALID_DID"
+  },
+  "rationale": "Section 2.2 defines method-specific-id := [0-9a-f]{16}. This identifier fails because of uppercase; section 2.2 says lowercase, so it is not a did:moltrust identifier at all.",
+  "id": "did-vector-007"
+}

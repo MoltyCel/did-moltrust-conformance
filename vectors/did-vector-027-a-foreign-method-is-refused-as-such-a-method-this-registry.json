@@ -1,0 +1,17 @@
+{
+  "name": "a foreign method is refused as such: a method this registry does not serve",
+  "description": "did:example:0123456789abcdef is not a did:moltrust identifier.",
+  "section_ref": "4.2",
+  "check": "resolve",
+  "target": "api",
+  "input": {
+    "did": "did:example:0123456789abcdef"
+  },
+  "expected": {
+    "result": "UNSUPPORTED_METHOD",
+    "http_status": 400,
+    "reason_code": "unsupported_method"
+  },
+  "rationale": "An unknown method and a malformed identifier of a known method are different problems and must not share an answer.",
+  "id": "did-vector-027"
+}

@@ -1,0 +1,18 @@
+{
+  "name": "a malformed identifier is invalidDid, not an internal error [driver]",
+  "description": "did:moltrust:ambassador0001 against the driver.",
+  "section_ref": "2.2",
+  "check": "resolve",
+  "target": "driver",
+  "input": {
+    "did": "did:moltrust:ambassador0001"
+  },
+  "expected": {
+    "result": "INVALID_DID",
+    "http_status": 400,
+    "reason_code": "invalidDid"
+  },
+  "rationale": "The method is ours and the identifier is not well formed, so the answer must name the identifier. Reported from outside on decentralized-identity/universal-resolver#541, where the driver reported internalError with 'Registry returned 400'.",
+  "known_deviation": "deployment::the public resolver runs a third codebase",
+  "id": "did-vector-022"
+}

@@ -1,0 +1,18 @@
+{
+  "name": "the ext_ prefix is not a did:moltrust identifier [api]",
+  "description": "did:moltrust:ext_516a656bafa39e5c against the api.",
+  "section_ref": "2.2",
+  "check": "resolve",
+  "target": "api",
+  "input": {
+    "did": "did:moltrust:ext_516a656bafa39e5c"
+  },
+  "expected": {
+    "result": "INVALID_DID",
+    "http_status": 400,
+    "reason_code": "invalid_did"
+  },
+  "rationale": "Section 2.2 defines no prefix, and section 6 describes the bridge without one. Eighteen of the nineteen bridge rows map to a conformant identifier.",
+  "known_deviation": "ext_::DID_PATTERN accepts a prefix the specification does not define",
+  "id": "did-vector-025"
+}

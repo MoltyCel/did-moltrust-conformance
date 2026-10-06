@@ -1,0 +1,79 @@
+name: conformance
+
+on:
+  push:
+  pull_request:
+  schedule:
+    # Daily at 06:00 UTC, half an hour before the server's daily report, so a
+    # finding from this run is in the report rather than a day behind it.
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+  # A push in moltrust-api, moltrust-web or the driver should trigger this too.
+  # That needs a token in each of those repositories with write on this one, and
+  # setting an Actions secret is outside the current token's permissions. Until
+  # then the cover is the daily schedule here plus the server's own daily run,
+  # which uses the same runner.
+  repository_dispatch:
+    types: [upstream-push]
+
+permissions:
+  contents: read
+
+jobs:
+  vectors:
+    name: vectors against the live services
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: vectors match the table
+        run: python3 tools/build_vectors.py --check
+
+      - name: every vector satisfies the schema
+        run: python3 tools/validate_schema.py
+
+      # Syntax and derivation arithmetic need no service, so they run even when
+      # the API is unreachable and say so separately.
+      - name: offline checks
+        run: |
+          python3 tools/run_vectors.py --check syntax
+          python3 tools/run_vectors.py --check derivation --json /tmp/derivation.json || true
+
+      - name: all vectors
+        id: run
+        run: python3 tools/run_vectors.py --json /tmp/conformance.json
+
+      - name: result as an artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: conformance-run
+          path: /tmp/conformance.json
+          if-no-files-found: warn
+
+      - name: summary
+        if: always()
+        run: |
+          if [ -f /tmp/conformance.json ]; then
+            python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          d = json.load(open("/tmp/conformance.json"))
+          s = d["summary"]
+          print("### did:moltrust conformance\n")
+          print(f"- API: `{d['api']}`")
+          print(f"- driver: `{d['driver']}`\n")
+          print("| | |")
+          print("|---|---|")
+          print(f"| vectors | {s['total']} |")
+          print(f"| held | {s['held']} |")
+          print(f"| registered deviation | {s['registered']} |")
+          print(f"| new deviation | {s['new']} |")
+          print(f"| registered but now holding | {s['vanished']} |")
+          bad = [r for r in d["results"] if not r["held"] and not r["registered_open"]]
+          if bad:
+              print("\n#### New\n")
+              for r in bad:
+                  print(f"- **{r['id']}** (section {r['section']}) {r['name']}")
+                  print(f"  - {r['note']}")
+          PY
+          fi
