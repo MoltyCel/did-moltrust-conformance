@@ -95,7 +95,13 @@ def observe(target, vec):
         status, body = request(f"{API}/identity/bridge-simple", "POST",
                                inp.get("body", {}))
         return status, api_reason(body)
-    did = urllib.parse.quote(inp["did"], safe="")
+    # plain by default: HttpDriver.java inserts the $1 placeholder verbatim, so a
+    # Universal Resolver sends the colons unencoded, and that is the path a peer
+    # actually hits. encoded is the other legal form and has its own vector.
+    if vec.get("path_form", "plain") == "encoded":
+        did = urllib.parse.quote(inp["did"], safe="")
+    else:
+        did = inp["did"]
     if target == "api":
         status, body = request(f"{API}/identity/resolve/{did}")
         return status, api_reason(body)

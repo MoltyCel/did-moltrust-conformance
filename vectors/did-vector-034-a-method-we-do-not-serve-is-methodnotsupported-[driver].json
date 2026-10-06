@@ -1,0 +1,17 @@
+{
+  "name": "a method we do not serve is methodNotSupported [driver]",
+  "description": "did:example:0123456789abcdef against the driver.",
+  "section_ref": "4.2",
+  "check": "resolve",
+  "target": "driver",
+  "input": {
+    "did": "did:example:0123456789abcdef"
+  },
+  "expected": {
+    "result": "UNSUPPORTED_METHOD",
+    "http_status": 400,
+    "reason_code": "methodNotSupported"
+  },
+  "rationale": "The branch returning this code existed and was unreachable: the route pattern :did{did:moltrust:.+} never matched a foreign method, so it produced a bare 404 instead. Found on 2026-10-06 while fixing the encoding, and this vector is why it cannot go back to being dead code.",
+  "id": "did-vector-034"
+}

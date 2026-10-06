@@ -29,6 +29,12 @@
       "default": "none",
       "description": "What answers. 'none' for a check that needs no service. A vector names exactly one target, so a failure cannot be excused by a register entry that belongs to the other one."
     },
+    "path_form": {
+      "type": "string",
+      "enum": ["plain", "encoded"],
+      "default": "plain",
+      "description": "How the DID is written into the request path. 'plain' leaves the colons as they are, which is what a Universal Resolver sends: HttpDriver inserts the $1 placeholder verbatim. 'encoded' percent-encodes them, which RFC 3986 makes an equivalent address and which the $2 and options paths of the same driver produce."
+    },
     "input": {
       "type": "object",
       "additionalProperties": false,

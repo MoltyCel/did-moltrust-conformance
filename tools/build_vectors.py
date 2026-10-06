@@ -61,6 +61,7 @@ def add(**kw):
     n += 1
     kw["id"] = f"did-vector-{n:03d}"
     vectors.append(kw)
+    return kw
 
 
 # --- section 2.2, syntax only, no service involved ------------------------
@@ -113,7 +114,10 @@ add(name="a registered DID derives from its own published key",
 # One vector, one target, one claim. A vector that asked two services at once
 # could hold on one and fail on the other, and then a single register entry
 # excused both halves.
-DEPLOY_DEV = "deployment::the public resolver runs a third codebase"
+# Closed 2026-10-06 once the service ran the published image and the four vectors
+# below held. The mark is gone with it: a return of the defect must show up as a
+# new deviation and fail the run, not as a known one that is quietly reported.
+DEPLOY_DEV = None
 
 RESOLVE_CASES = [
     ("a registered identifier resolves to a DID document",
@@ -197,6 +201,44 @@ add(name="the bridge endpoint exists and is guarded",
               "without a vector: a sentence missing from a document is not "
               "something a runner can watch fail.")
 
+# --- both address forms, and a method we do not serve ---------------------
+add(name="a percent-encoded DID is the same address [driver]",
+    description="did%3Amoltrust%3Ad34ed796a4dc4698 must answer exactly as the "
+                "plain form does.",
+    section_ref="4.2", check="resolve", target="driver", path_form="encoded",
+    input={"did": "did:moltrust:d34ed796a4dc4698"},
+    expected={"result": "RESOLVES", "http_status": 200, "reason_code": None},
+    rationale="RFC 3986 allows a colon unencoded in a path segment, and "
+              "percent-encoding it yields an equivalent URI. On 2026-10-06 the "
+              "driver answered the plain form and gave the encoded one a "
+              "plain-text 404 with no resolution metadata at all, because a Hono "
+              "route pattern matched the raw path. HttpDriver.java sends the "
+              "plain form for a $1 placeholder and the encoded form for $2 or "
+              "when resolution options are present, so both reach a driver in "
+              "practice.")
+
+add(name="a malformed identifier is invalidDid in the encoded form too [driver]",
+    description="The reported identifier, percent-encoded.",
+    section_ref="2.2", check="resolve", target="driver", path_form="encoded",
+    input={"did": "did:moltrust:ambassador0001"},
+    expected={"result": "INVALID_DID", "http_status": 400,
+              "reason_code": "invalidDid"},
+    rationale="The regression of 2026-10-06 turned this into a 404 without a "
+              "reason code, which a resolver cannot report and a caller cannot "
+              "tell from an absent service.")
+
+add(name="a method we do not serve is methodNotSupported [driver]",
+    description="did:example:0123456789abcdef against the driver.",
+    section_ref="4.2", check="resolve", target="driver",
+    input={"did": "did:example:0123456789abcdef"},
+    expected={"result": "UNSUPPORTED_METHOD", "http_status": 400,
+              "reason_code": "methodNotSupported"},
+    rationale="The branch returning this code existed and was unreachable: the "
+              "route pattern :did{did:moltrust:.+} never matched a foreign "
+              "method, so it produced a bare 404 instead. Found on 2026-10-06 "
+              "while fixing the encoding, and this vector is why it cannot go "
+              "back to being dead code.")
+
 # --- the running service against the version it claims --------------------
 add(name="the running driver behaves like the version it reports",
     description="/health must name the commit the image was built from, and the "
@@ -213,7 +255,7 @@ add(name="the running driver behaves like the version it reports",
               "such. This vector is what makes the register entry closable: it "
               "cannot be closed by inspection, only by the service answering "
               "correctly and saying which commit answered.",
-    known_deviation="deployment::the public resolver runs a third codebase")
+    )
 
 OUT.mkdir(exist_ok=True)
 

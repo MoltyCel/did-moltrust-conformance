@@ -3,10 +3,23 @@
   "entries": {
     "deployment::the public resolver runs a third codebase": {
       "check": "deployment",
+      "closed_at": "2026-10-06T21:24:26+00:00",
+      "closed_because": "moltrust-uresolver.service runs the published image, pinned by digest. Switched 2026-10-06 21:02 UTC onto 1.2.0 and 21:20 UTC onto 1.2.1 after a regression the vectors caught. Verified against https://uresolver.moltrust.ch, not against a local container: the running container's RepoDigest is sha256:e06a5cb265f37e79c7ac16f0a887e48f4173b44734b4d3295f49bd735264c4ce, /health reports commit 139bd96fb4373885e2fdc0d1bfc4785ea17941bb, and the three resolution cases answer correctly in both address forms. Vectors did-vector-022, -024, -026 and -035 hold, and -035 is the one that asks whether the behaviour matches the version the service claims.",
+      "closed_evidence": {
+        "commit": "139bd96fb4373885e2fdc0d1bfc4785ea17941bb",
+        "digest": "sha256:e06a5cb265f37e79c7ac16f0a887e48f4173b44734b4d3295f49bd735264c4ce",
+        "image": "moltrust/driver-did-moltrust:1.2.1",
+        "vectors": [
+          "did-vector-022",
+          "did-vector-024",
+          "did-vector-026",
+          "did-vector-035"
+        ]
+      },
       "first_seen": "2026-10-06T18:00:29+00:00",
       "observable": true,
       "source": "did-conformance",
-      "status": "open",
+      "status": "closed",
       "what": "the public resolver runs a third codebase",
       "where": "moltrust-uresolver.service, cwd /home/moltstack/driver-did-moltrust, nginx uresolver.moltrust.ch -> 127.0.0.1:8168",
       "why": "moltrust-uresolver.service runs node server.js from ~/driver-did-moltrust, a repository that never published an image, while the published image comes from uni-resolver-driver-did-moltrust/index.js. The two answer differently for a malformed identifier: the deployed service says notFound, the published 1.0.0 image said internalError, and 1.1.0 says invalidDid. The fix shipped in 1.1.0 is in neither running thing."

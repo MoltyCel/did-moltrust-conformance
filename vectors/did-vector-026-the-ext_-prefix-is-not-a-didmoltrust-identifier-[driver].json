@@ -13,6 +13,5 @@
     "reason_code": "invalidDid"
   },
   "rationale": "Section 2.2 defines no prefix, and section 6 describes the bridge without one. Eighteen of the nineteen bridge rows map to a conformant identifier.",
-  "known_deviation": "deployment::the public resolver runs a third codebase",
   "id": "did-vector-026"
 }

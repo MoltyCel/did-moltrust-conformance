@@ -13,6 +13,5 @@
     "reason_code": "invalidDid"
   },
   "rationale": "Two rows predate the 16-hex convention. Both must answer the same way, so neither becomes a special case.",
-  "known_deviation": "deployment::the public resolver runs a third codebase",
   "id": "did-vector-024"
 }

@@ -11,6 +11,5 @@
     "result": "CONFORMS"
   },
   "rationale": "A deployment is conformant when what runs can be named and the name matches the behaviour. Until 2026-10-06 the service at uresolver.moltrust.ch ran server.js from a second repository, reported version 1.0.0, and answered notFound where the specification requires a malformed identifier to be refused as such. This vector is what makes the register entry closable: it cannot be closed by inspection, only by the service answering correctly and saying which commit answered.",
-  "known_deviation": "deployment::the public resolver runs a third codebase",
-  "id": "did-vector-032"
+  "id": "did-vector-035"
 }
