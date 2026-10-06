@@ -43,14 +43,17 @@ jobs:
         id: run
         run: python3 tools/run_vectors.py --json /tmp/conformance.json
 
-      # The published artefacts against each other. No web root and no
-      # moltrust-api checkout here, so keys-have-code skips itself and the local
-      # file is not scanned; the key symmetry and the URLs are checked in full.
-      - name: published artefacts
+      # The published artefacts against each other, as far as a runner can see
+      # them. --only keys is deliberate: the URL check reads the served
+      # did-method-spec.html, which is not here, and a run must not read "did not
+      # look there" as "nothing is wrong there". The URL half runs on the server,
+      # where the web root exists. keys-have-code also needs a moltrust-api
+      # checkout and reports that it did not run.
+      - name: published artefacts, key symmetry
         env:
           MOLTRUST_API_CHECKOUT: /nonexistent
           ARTEFACT_REPORT_DIR: /tmp
-        run: python3 tools/artefact_check.py
+        run: python3 tools/artefact_check.py --only keys
 
       - name: result as an artifact
         if: always()

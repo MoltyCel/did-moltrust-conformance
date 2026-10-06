@@ -16,7 +16,12 @@ Standard library only, so it runs from cron without a virtualenv.
 
   artefact_check.py            run the checks, write the report, exit 1 on a new
                                or vanished deviation
+  artefact_check.py --only keys  only the key checks, which need no local files
   artefact_check.py --baseline print register entries for everything found now
+
+A run compares only the checks it performed. Asking whether an entry has vanished
+is only meaningful for a check that ran, so --only keys leaves every urls-resolve
+entry alone rather than reading its absence as a fix.
 """
 import datetime
 import html
@@ -142,8 +147,8 @@ def check_keys_have_code(jwks_kids, deviations):
     try:
         grep_repo("")
     except FileNotFoundError as e:
-        print(f"  keys-have-code uebersprungen: {e}")
-        return
+        print(f"  keys-have-code nicht durchgefuehrt: {e}")
+        return False
     for kid in sorted(jwks_kids):
         hits = grep_repo(kid)
         if not hits:
@@ -191,7 +196,11 @@ def collect_urls():
 
     for p in PUBLISHED_FILES:
         if not p.is_file():
-            continue
+            # Narrowing the URL set because a file is missing would turn "did
+            # not look there" into "nothing is wrong there".
+            raise RunAborted(
+                f"{p} fehlt; die URL-Pruefung kann nicht durchgefuehrt werden. "
+                "Setze MOLTRUST_WEBROOT, oder rufe mit --only keys auf")
         text = html.unescape(p.read_text(encoding="utf-8", errors="replace"))
         for m in URL_RE.finditer(text):
             add(m.group(0), p.name)
@@ -244,11 +253,31 @@ def load_register():
 
 
 def main():
+    only = None
+    if "--only" in sys.argv:
+        i = sys.argv.index("--only")
+        if i + 1 >= len(sys.argv) or sys.argv[i + 1] not in ("keys", "urls", "all"):
+            print("--only braucht keys, urls oder all", file=sys.stderr)
+            return 2
+        only = sys.argv[i + 1]
+        only = None if only == "all" else only
+
     deviations = []
+    url_results = []
+    # The checks this run performs. An entry whose check is not in here is left
+    # alone: this run has nothing to say about it.
+    ran = set()
     try:
-        did_kids, jwks_kids = check_keys_symmetry(deviations)
-        check_keys_have_code(jwks_kids, deviations)
-        url_results = check_urls(deviations)
+        if only in (None, "keys"):
+            did_kids, jwks_kids = check_keys_symmetry(deviations)
+            ran.add("keys-symmetry")
+            if check_keys_have_code(jwks_kids, deviations) is not False:
+                ran.add("keys-have-code")
+        else:
+            did_kids = jwks_kids = None
+        if only in (None, "urls"):
+            url_results = check_urls(deviations)
+            ran.add("urls-resolve")
     except RunAborted as e:
         # Exit 2, and the register is not touched: an entry may only be closed by
         # a run that looked and did not find it.
@@ -275,7 +304,11 @@ def main():
     # other's entries.
     MINE = "artefact-check"
     known = {k: v for k, v in reg["entries"].items() if v.get("status") == "open"}
-    mine_open = {k: v for k, v in known.items() if v.get("source", MINE) == MINE}
+    # Mine, and from a check this run actually carried out. Either condition
+    # alone has already produced a wrong closure: scoping only by tool closed six
+    # URL entries in CI, where there is no web root to read them from.
+    mine_open = {k: v for k, v in known.items()
+                 if v.get("source", MINE) == MINE and v.get("check") in ran}
 
     new = [d for k, d in found.items() if k not in known]
     vanished = [k for k in mine_open if k not in found]
@@ -295,6 +328,7 @@ def main():
     lines.append(f"- did.json kids: {len(did_kids or [])}")
     lines.append(f"- jwks.json kids: {len(jwks_kids or [])}")
     lines.append(f"- URLs geprueft: {len(url_results)}")
+    lines.append(f"- durchgefuehrte Pruefungen: {', '.join(sorted(ran)) or 'keine'}")
     lines.append(f"- Abweichungen gefunden: {len(found)}")
     lines.append(f"- davon im Register: {len(found) - len(new)}")
     lines.append(f"- neu: {len(new)}   verschwunden: {len(vanished)}")
