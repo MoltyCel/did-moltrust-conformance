@@ -242,5 +242,9 @@
       "why": "An external specification we cite has moved or been withdrawn at that address. Ours to correct, since we are the ones naming it."
     }
   },
-  "note": "Register bekannter Abweichungen. Ein Eintrag mit status open wird gemeldet und bricht keinen Lauf ab. Verschwindet die Abweichung, wird das gemeldet und der Eintrag geschlossen. Ein Befund ohne Eintrag bricht den Lauf ab."
+  "note": "Register bekannter Abweichungen. Ein Eintrag mit status open wird gemeldet und bricht keinen Lauf ab. Verschwindet die Abweichung, wird das gemeldet und der Eintrag geschlossen. Ein Befund ohne Eintrag bricht den Lauf ab.",
+  "rules": {
+    "a_run_closes_only_what_it_observed": "Ein Lauf schliesst nur, was er selbst beobachtet hat. Fehlt die Beobachtung - Netzfehler, fehlender Checkout, fremdes Werkzeug -, bleibt der Eintrag offen und der Lauf endet mit einem Fehlercode. Dreimal an einem Tag verletzt und dreimal behoben: artefact-check hielt jeden offenen Eintrag, den es nicht fand, fuer verschwunden und schloss fuenf Eintraege eines anderen Werkzeugs; ein Netzfehler beim Holen von did.json schloss acht; und grep_repo machte aus einem fehlenden Checkout die Aussage, kein Codepfad signiere mit einem Schluessel. Jeder Eintrag nennt darum sein Werkzeug in source, und Unerreichbarkeit endet in Exit-Code 2 ohne Schreibzugriff auf diese Datei.",
+    "observable_entries_only": "Ein Eintrag mit observable: false ist ein Mangel in einem Dokument. Kein Lauf kann ihn schliessen, weil ein fehlender Satz nichts ist, was ein Laeufer fallen sehen kann; ein Mensch schliesst ihn."
+  }
 }

@@ -148,8 +148,42 @@ def check_bridge(vec):
     return status == w, f"api: {status}/{reason} erwartet {w}"
 
 
+def check_deployment(vec):
+    """Does the running driver behave like the version it reports?
+
+    Two codebases both called themselves 1.0.0 and answered a malformed
+    identifier differently - notFound from the service deployed at
+    uresolver.moltrust.ch, internalError from the published image. A version
+    string cannot settle that; a commit can, which is why /health has to carry
+    one. So this asks two things at once:
+
+      /health names a commit, not only a version
+      the malformed identifier answers invalidDid
+
+    A service that cannot name its commit fails the first half, and a service
+    running other code than it claims fails the second.
+    """
+    status, body = request(f"{DRIVER}/health")
+    if status != 200 or not isinstance(body, dict):
+        return False, f"/health: HTTP {status}"
+    commit = body.get("commit")
+    reported = f"commit={commit!r} version={body.get('version')!r}"
+    if not commit or commit == "unknown" or not re.fullmatch(r"[0-9a-f]{7,40}", commit):
+        return False, (f"/health nennt keinen pruefbaren Commit: {reported}; "
+                       "eine gepflegte Versionszeichenkette kann nicht belegen, "
+                       "welcher Code laeuft")
+    probe = {"input": {"did": "did:moltrust:ambassador0001"}, "check": "resolve",
+             "target": "driver"}
+    pstatus, preason = observe("driver", probe)
+    if pstatus == 400 and preason == "invalidDid":
+        return True, f"{reported}, und ambassador0001 -> 400/invalidDid"
+    return False, (f"{reported}, aber ambassador0001 -> {pstatus}/{preason}; "
+                   "das Verhalten passt nicht zu der angegebenen Fassung")
+
+
 RUNNERS = {"syntax": check_syntax, "derivation": check_derivation,
-           "resolve": check_resolve, "bridge": check_bridge}
+           "resolve": check_resolve, "bridge": check_bridge,
+           "deployment": check_deployment}
 
 
 def main():

@@ -20,8 +20,8 @@
     },
     "check": {
       "type": "string",
-      "enum": ["syntax", "derivation", "resolve", "bridge"],
-      "description": "syntax = the identifier string alone decides, no network. derivation = the identifier must follow from a public key. resolve = a live request to the registry or the Universal Resolver driver. bridge = section 6, the cross-ecosystem bridge."
+      "enum": ["syntax", "derivation", "resolve", "bridge", "deployment"],
+      "description": "syntax = the identifier string alone decides, no network. derivation = the identifier must follow from a public key. resolve = a live request to the registry or the Universal Resolver driver. bridge = section 6, the cross-ecosystem bridge. deployment = whether a running service behaves like the version it reports."
     },
     "target": {
       "type": "string",

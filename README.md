@@ -78,6 +78,36 @@ say outright that the cause is not established, rather than pretending to one.
 The derivation vector is in here although it fails for every identifier we have
 issued. That is deliberate: a vector that only ever passes measures nothing.
 
+## A run closes only what it observed
+
+The rule every tool that writes to the register follows. Where the observation is
+missing — a network error, an absent checkout, another tool's entry — the entry
+stays open and the run ends with a non-zero status.
+
+It is here because it was broken three times in one day and each break looked
+different:
+
+- `artefact-check` treated every open entry it had not found as vanished, and
+  closed five entries belonging to `did-conformance` because it does not look at
+  those things at all. Each entry now names the tool that watches it in `source`,
+  and a tool only closes its own.
+- A network error fetching `did.json` was reported as a deviation, the run
+  returned early, and eight entries read as vanished. Unreachable is now an abort
+  with exit 2 and no write to the register.
+- `grep_repo` returned an empty list when there was no checkout to search, which
+  turned "cannot look" into "no code path signs with this kid".
+
+Each of the three produced a confident wrong answer rather than an error, which is
+the shape worth naming: a check that cannot run is not a check that passed.
+
+## Checking a deployment
+
+One vector asks whether the running driver behaves like the version it reports.
+Two codebases both called themselves `1.0.0` and answered a malformed identifier
+differently, so `/health` has to name the commit the image was built from. A
+service that cannot name its commit fails the vector, and so does one running
+other code than it claims.
+
 ## Relation to the other repositories
 
 `MoltyCel/aae-conformance-vectors` covers the Agent Authorization Envelope. This

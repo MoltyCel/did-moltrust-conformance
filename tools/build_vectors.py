@@ -197,6 +197,24 @@ add(name="the bridge endpoint exists and is guarded",
               "without a vector: a sentence missing from a document is not "
               "something a runner can watch fail.")
 
+# --- the running service against the version it claims --------------------
+add(name="the running driver behaves like the version it reports",
+    description="/health must name the commit the image was built from, and the "
+                "malformed identifier must answer invalidDid. Two codebases both "
+                "reported 1.0.0 and answered differently.",
+    section_ref="2.2", check="deployment", target="driver",
+    input={"did": "did:moltrust:ambassador0001"},
+    expected={"result": "CONFORMS"},
+    rationale="A deployment is conformant when what runs can be named and the "
+              "name matches the behaviour. Until 2026-10-06 the service at "
+              "uresolver.moltrust.ch ran server.js from a second repository, "
+              "reported version 1.0.0, and answered notFound where the "
+              "specification requires a malformed identifier to be refused as "
+              "such. This vector is what makes the register entry closable: it "
+              "cannot be closed by inspection, only by the service answering "
+              "correctly and saying which commit answered.",
+    known_deviation="deployment::the public resolver runs a third codebase")
+
 OUT.mkdir(exist_ok=True)
 
 
