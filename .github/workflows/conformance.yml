@@ -43,6 +43,15 @@ jobs:
         id: run
         run: python3 tools/run_vectors.py --json /tmp/conformance.json
 
+      # The published artefacts against each other. No web root and no
+      # moltrust-api checkout here, so keys-have-code skips itself and the local
+      # file is not scanned; the key symmetry and the URLs are checked in full.
+      - name: published artefacts
+        env:
+          MOLTRUST_API_CHECKOUT: /nonexistent
+          ARTEFACT_REPORT_DIR: /tmp
+        run: python3 tools/artefact_check.py
+
       - name: result as an artifact
         if: always()
         uses: actions/upload-artifact@v4
