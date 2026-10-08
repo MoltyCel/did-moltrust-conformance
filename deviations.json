@@ -31,8 +31,8 @@
       "source": "did-conformance",
       "status": "open",
       "what": "identifiers are not derived from the key",
-      "where": "app/main.py:1584, 1906, 2025, 4398, 5062, 6114, 11034 in moltrust-api",
-      "why": "Section 2.2 requires the method-specific identifier to be the first 8 bytes of SHA-256 over the agent's Ed25519 public key. All seven places that mint a DID use uuid.uuid4().hex[:16], so the shape conforms and the derivation does not. This affects every one of the 532 registered DIDs, and /identity/register-pop has the public key in hand and still does not use it."
+      "where": "app/main.py:1612, 1934, 2053, 4444, 5108, 6160 in moltrust-api at 2c62ddb00f93836c72e47fae3a6c13bcef0f11aa (the line numbers named on 2026-10-06 have moved). MoltyCel/moltrust-api#659 changes 1934 (register-pop) and is not merged.",
+      "why": "Section 2.2 is being revised (MoltyCel/moltrust-web#282, not merged): from method version 1.1 an identifier MUST be the first 8 bytes of SHA-256 over the Ed25519 public key, and 1.0 identifiers are opaque and stay resolvable. At 2c62ddb every route still mints uuid4().hex[:16]. Only register-pop holds a key whose possession was proved; the other five hold none, so they cannot derive and would keep issuing 1.0 identifiers after 1.1 is in force. No vector can watch this entry close until a 1.1 identifier exists in the registry."
     },
     "ext_::DID_PATTERN accepts a prefix the specification does not define": {
       "check": "syntax",
@@ -83,6 +83,16 @@
       "what": "kid in jwks.json without a verification method: moltrust-registry-2026-v1",
       "where": "https://api.moltrust.ch/.well-known/jwks.json",
       "why": "Same shape as moltrust-gateway-v1: published as a signing key, absent from the DID document."
+    },
+    "lookup::read endpoints accept identifiers outside section 2.2": {
+      "check": "lookup",
+      "first_seen": "2026-10-08T06:28:00+00:00",
+      "observable": true,
+      "source": "did-conformance",
+      "status": "open",
+      "what": "read endpoints accept identifiers outside section 2.2",
+      "where": "validate_did_lookup() and DID_LOOKUP_PATTERN in app/main.py of moltrust-api at 2c62ddb00f93836c72e47fae3a6c13bcef0f11aa: thirteen calls (2215, 2308, 2650, 2968, 4671, 4980, 5382, 5426, 5527, 5548, 6063, 6458, 6963) and two direct uses (5805, 8000).",
+      "why": "The lookup pattern was [a-z0-9_-]{1,64}, kept so the pre-convention identifiers stayed readable after 2026-05-30. /identity/resolve refuses them under section 2.2 since #631, so the read endpoints answer for identifiers the resolver calls malformed. Observed 2026-10-08: GET /reputation/query/did:moltrust:vcone answered 200. MoltyCel/moltrust-api#660 changes it and is not merged."
     },
     "spec::section 6 omits the X-API-Key the endpoint requires": {
       "check": "bridge",

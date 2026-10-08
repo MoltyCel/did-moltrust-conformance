@@ -9,7 +9,7 @@
   "properties": {
     "id": {
       "type": "string",
-      "pattern": "^did-(syntax|derivation|resolve|bridge|deployment)-[a-z0-9-]{3,72}$",
+      "pattern": "^did-(syntax|derivation|resolve|bridge|deployment|lookup)-[a-z0-9-]{3,72}$",
       "description": "Derived from the check and the name, never from the position. A positional id changes when an unrelated vector is inserted, which invalidates every report and register entry that names it."
     },
     "name": { "type": "string", "minLength": 1 },
@@ -21,8 +21,8 @@
     },
     "check": {
       "type": "string",
-      "enum": ["syntax", "derivation", "resolve", "bridge", "deployment"],
-      "description": "syntax = the identifier string alone decides, no network. derivation = the identifier must follow from a public key. resolve = a live request to the registry or the Universal Resolver driver. bridge = section 6, the cross-ecosystem bridge. deployment = whether a running service behaves like the version it reports."
+      "enum": ["syntax", "derivation", "resolve", "bridge", "deployment", "lookup"],
+      "description": "syntax = the identifier string alone decides, no network. derivation = the identifier must follow from a public key. resolve = a live request to the registry or the Universal Resolver driver. bridge = section 6, the cross-ecosystem bridge. deployment = whether a running service behaves like the version it reports. lookup = a read endpoint that takes a DID in its path applies the section 2.2 syntax."
     },
     "target": {
       "type": "string",
@@ -47,6 +47,11 @@
           "description": "Ed25519 public key, 32 bytes as lowercase hex, for a derivation vector."
         },
         "external_did": { "type": "string" },
+        "path": {
+          "type": "string",
+          "pattern": "^/[^ ]*\\{did\\}[^ ]*$",
+          "description": "For a lookup vector: the endpoint path, with {did} where the DID goes."
+        },
         "body": { "type": "object" }
       }
     },
@@ -57,8 +62,8 @@
       "properties": {
         "result": {
           "type": "string",
-          "enum": ["CONFORMS", "RESOLVES", "NOT_FOUND", "INVALID_DID", "UNSUPPORTED_METHOD"],
-          "description": "CONFORMS for a syntax or derivation vector that should hold. The other four are resolution outcomes."
+          "enum": ["CONFORMS", "NOT_DERIVED", "LEGACY", "RESOLVES", "NOT_FOUND", "INVALID_DID", "UNSUPPORTED_METHOD"],
+          "description": "CONFORMS for a syntax or derivation vector that should hold. NOT_DERIVED for a derivation vector whose identifier must not recompute from its key. LEGACY for a method version 1.0 identifier: it resolves and is not reported as issued under 1.1. The other four are resolution outcomes."
         },
         "http_status": { "type": ["integer", "null"], "minimum": 100, "maximum": 599 },
         "reason_code": {

@@ -1,0 +1,16 @@
+{
+  "name": "the RFC 8032 test key gives the identifier of the specification example",
+  "description": "Section 2.2 (method version 1.1) works its example from the public key of RFC 8032 section 7.1 test 1. The identifier has to be the one the text prints.",
+  "section_ref": "2.2",
+  "check": "derivation",
+  "target": "none",
+  "input": {
+    "public_key_hex": "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a",
+    "did": "did:moltrust:21fe31dfa154a261"
+  },
+  "expected": {
+    "result": "CONFORMS"
+  },
+  "rationale": "The value 21fe31dfa154a261 is written into the specification, computed with openssl over the 32 raw bytes. This vector holds the text and the arithmetic to each other.",
+  "id": "did-derivation-the-rfc-8032-test-key-gives-the-identifi"
+}

@@ -118,10 +118,26 @@ def check_syntax(vec):
 
 def check_derivation(vec):
     inp = vec["input"]
+    expected = vec["expected"]["result"]
     if "public_key_hex" in inp:
         want = inp["did"].split(":")[-1]
         got = hashlib.sha256(bytes.fromhex(inp["public_key_hex"])).hexdigest()[:16]
-        return got == want, f"abgeleitet {got}, im Identifier {want}"
+        derived = got == want
+        return derived == (expected == "CONFORMS"), (
+            f"abgeleitet {got}, im Identifier {want}, erwartet {expected}")
+    if expected == "LEGACY":
+        # Section 2.2 carve-out: a 1.0 identifier resolves, and nothing in the
+        # result says it was issued under 1.1. identifierRule is the proposed
+        # name; until it is fixed, its absence is not a failure.
+        did = urllib.parse.quote(inp["did"], safe="")
+        status, body = request(f"{API}/identity/resolve/{did}")
+        if status != 200 or not isinstance(body, dict):
+            return False, f"1.0-Identifier nicht aufloesbar: HTTP {status}"
+        meta = body.get("didDocumentMetadata") or {}
+        rule = meta.get("identifierRule") if isinstance(meta, dict) else None
+        if rule not in (None, "1.0"):
+            return False, f"aufloesbar, aber identifierRule={rule!r}"
+        return True, f"aufloesbar, identifierRule={rule!r}"
     # Live: take the key the registry publishes and derive from it.
     did = urllib.parse.quote(inp["did"], safe="")
     status, body = request(f"{API}/identity/resolve/{did}")
@@ -187,7 +203,16 @@ def check_deployment(vec):
                    "das Verhalten passt nicht zu der angegebenen Fassung")
 
 
+def check_lookup(vec):
+    path = vec["input"]["path"].replace(
+        "{did}", urllib.parse.quote(vec["input"]["did"], safe=":"))
+    status, body = request(f"{API}{path}")
+    w = vec["expected"].get("http_status")
+    return status == w, f"api {path}: {status}/{api_reason(body)} erwartet {w}"
+
+
 RUNNERS = {"syntax": check_syntax, "derivation": check_derivation,
+           "lookup": check_lookup,
            "resolve": check_resolve, "bridge": check_bridge,
            "deployment": check_deployment}
 
