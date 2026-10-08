@@ -1,0 +1,18 @@
+{
+  "name": "a lookup endpoint refuses an identifier outside section 2.2",
+  "description": "The read endpoints that take a DID in the path apply the section 2.2 syntax, the same as the resolver. A lookup that answers for an identifier the resolver calls malformed contradicts it.",
+  "section_ref": "2.2",
+  "check": "lookup",
+  "target": "api",
+  "input": {
+    "did": "did:moltrust:vcone",
+    "path": "/reputation/query/{did}"
+  },
+  "expected": {
+    "result": "INVALID_DID",
+    "http_status": 400
+  },
+  "rationale": "/identity/resolve refuses did:moltrust:vcone as invalid_did. Fifteen read sites accepted anything in [a-z0-9_-]{1,64} and answered for it.",
+  "known_deviation": "lookup::read endpoints accept identifiers outside section 2.2",
+  "id": "did-lookup-a-lookup-endpoint-refuses-an-identifier-api"
+}
