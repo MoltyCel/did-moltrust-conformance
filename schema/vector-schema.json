@@ -62,8 +62,8 @@
       "properties": {
         "result": {
           "type": "string",
-          "enum": ["CONFORMS", "NOT_DERIVED", "LEGACY", "RESOLVES", "NOT_FOUND", "INVALID_DID", "UNSUPPORTED_METHOD"],
-          "description": "CONFORMS for a syntax or derivation vector that should hold. NOT_DERIVED for a derivation vector whose identifier must not recompute from its key. LEGACY for a method version 1.0 identifier: it resolves and is not reported as issued under 1.1. The other four are resolution outcomes."
+          "enum": ["CONFORMS", "NOT_DERIVED", "ASSIGNED", "RESOLVES", "NOT_FOUND", "INVALID_DID", "UNSUPPORTED_METHOD"],
+          "description": "CONFORMS for a syntax or derivation vector that should hold. NOT_DERIVED for a derivation vector whose identifier must not recompute from its key. ASSIGNED for an identifier issued before v0.2 (rule assigned-opaque): it resolves and is not reported as derived. The other four are resolution outcomes."
         },
         "http_status": { "type": ["integer", "null"], "minimum": 100, "maximum": 599 },
         "reason_code": {

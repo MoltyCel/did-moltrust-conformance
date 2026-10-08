@@ -32,7 +32,7 @@
       "status": "open",
       "what": "identifiers are not derived from the key",
       "where": "app/main.py:1612, 1934, 2053, 4444, 5108, 6160 in moltrust-api at 2c62ddb00f93836c72e47fae3a6c13bcef0f11aa (the line numbers named on 2026-10-06 have moved). MoltyCel/moltrust-api#659 changes 1934 (register-pop) and is not merged.",
-      "why": "Section 2.2 is being revised (MoltyCel/moltrust-web#282, not merged): from method version 1.1 an identifier MUST be the first 8 bytes of SHA-256 over the Ed25519 public key, and 1.0 identifiers are opaque and stay resolvable. At 2c62ddb every route still mints uuid4().hex[:16]. Only register-pop holds a key whose possession was proved; the other five hold none, so they cannot derive and would keep issuing 1.0 identifiers after 1.1 is in force. No vector can watch this entry close until a 1.1 identifier exists in the registry."
+      "why": "Section 2.2 is being revised for v0.2 (MoltyCel/moltrust-web#282, not merged): under rule derived-sha256-ed25519-8 an identifier MUST be the first 8 bytes of SHA-256 over the Ed25519 public key; identifiers issued before v0.2 are assigned-opaque and stay resolvable. At 2c62ddb every route still mints uuid4().hex[:16]. Only register-pop holds a key whose possession was proved; the other five hold none, so they cannot derive and would keep assigning identifiers after v0.2. No vector can watch this entry close until a derived identifier exists in the registry."
     },
     "ext_::DID_PATTERN accepts a prefix the specification does not define": {
       "check": "syntax",

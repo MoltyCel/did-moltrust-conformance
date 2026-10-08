@@ -37,7 +37,7 @@ vector is not a list.**
 | Section | What | Vectors |
 |---|---|---|
 | 2.2 | syntax of the method-specific identifier: length, case, hex, the `ext_` prefix | 14 |
-| 2.2 | the derivation clause by method version: 1.1 identifiers from the first 8 bytes of SHA-256 over the Ed25519 public key, 1.0 identifiers resolvable with no derivation claimed | 4 |
+| 2.2 | the derivation clause: rule derived-sha256-ed25519-8 (from v0.2) takes the first 8 bytes of SHA-256 over the Ed25519 public key; assigned-opaque identifiers stay resolvable with no derivation claimed | 4 |
 | 2.2 | the read endpoints apply the same syntax as the resolver | 1 |
 | 4.2 | resolution outcomes: a document, `did_not_found`, `invalidDid`, an unknown method | 14 |
 | 6 | the cross-ecosystem bridge, `POST /identity/bridge-simple` | 1 |
@@ -76,9 +76,9 @@ say outright that the cause is not established, rather than pretending to one.
   because a sentence missing from a specification is not something a runner can
   watch fail.
 
-The derivation clause is versioned (MoltyCel/moltrust-web#282): identifiers issued
-under method version 1.0 stay resolvable and carry no derivation claim, so the
-live vector asks only that. One arithmetic vector carries an identifier that must
+The derivation clause arrives in v0.2 (MoltyCel/moltrust-web#282): identifiers
+issued before it are assigned, stay resolvable and carry no derivation claim, so
+the live vector asks only that. One arithmetic vector carries an identifier that must
 not derive from its key, because a vector that only ever passes measures nothing.
 
 ## A run closes only what it observed

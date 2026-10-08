@@ -21,7 +21,7 @@ OUT = ROOT / "vectors"
 # key rather than a made-up hex string. Generated once, never a signing key.
 SAMPLE_PUBKEY = "3b6a27bcceb6a42d62a3a8d02a6f0d73653215771de243a63ac048a18b59da29"
 
-# The public key of RFC 8032 section 7.1, test 1. Section 2.2 works its 1.1
+# The public key of RFC 8032 section 7.1, test 1. Section 2.2 (v0.2) works its
 # example from it, so the specification and this table quote the same bytes.
 RFC8032_TEST1_PUBKEY = "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a"
 
@@ -142,7 +142,8 @@ add(name="the identifier follows from the public key",
     )
 
 add(name="the RFC 8032 test key gives the identifier of the specification example",
-    description="Section 2.2 (method version 1.1) works its example from the "
+    description="Section 2.2 (v0.2) works its example of rule "
+                "derived-sha256-ed25519-8 from the "
                 "public key of RFC 8032 section 7.1 test 1. The identifier has "
                 "to be the one the text prints.",
     section_ref="2.2", check="derivation", target="none",
@@ -168,16 +169,17 @@ add(name="hashing the hex text of the key is not the derivation",
               "nothing.",
     )
 
-add(name="a version 1.0 identifier stays resolvable and claims no derivation",
-    description="Section 2.2 keeps identifiers issued under method version 1.0 "
-                "resolvable and gives no assurance that they derive from a key. "
-                "The example identifier of section 2.2 is one of them.",
+add(name="an assigned identifier stays resolvable and claims no derivation",
+    description="Section 2.2 keeps every identifier issued before v0.2 "
+                "(rule assigned-opaque) resolvable and gives no assurance that "
+                "it derives from a key. The example identifier of section 2.2 "
+                "is one of them.",
     section_ref="2.2", check="derivation", target="api",
     input={"did": "did:moltrust:d34ed796a4dc4698"},
-    expected={"result": "LEGACY"},
+    expected={"result": "ASSIGNED"},
     rationale="The carve-out has two halves a run can watch: the identifier "
               "still resolves, and the resolution result does not report it as "
-              "issued under 1.1. Whether it happens to recompute from its key "
+              "derived. Whether it happens to recompute from its key "
               "is not asked, because the text promises nothing either way.",
     )
 
