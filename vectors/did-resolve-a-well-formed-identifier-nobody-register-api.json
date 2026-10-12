@@ -10,8 +10,19 @@
   "expected": {
     "result": "NOT_FOUND",
     "http_status": 404,
-    "reason_code": "did_not_found"
+    "reason_code": "https://www.w3.org/ns/did#NOT_FOUND"
   },
   "rationale": "A conformant identifier that was never registered is absent, not malformed. Saying invalid here would send an implementer to check their string instead of their registration.",
+  "expected_history": [
+    {
+      "replaced": "2026-10-12",
+      "expected": {
+        "result": "NOT_FOUND",
+        "http_status": 404,
+        "reason_code": "did_not_found"
+      },
+      "why": "Until moltrust-api #741 (2026-10-12) the API carried its code under detail.error. A miss is now a DID resolution result with an RFC 9457 error object, as section 4.4 of DID Resolution v1 requires. detail.error still answers did_not_found until 2027-01-10, but this vector reads the form the specification names."
+    }
+  ],
   "id": "did-resolve-a-well-formed-identifier-nobody-register-api"
 }

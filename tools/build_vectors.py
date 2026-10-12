@@ -192,6 +192,28 @@ add(name="an assigned identifier stays resolvable and claims no derivation",
 # new deviation and fail the run, not as a known one that is quietly reported.
 DEPLOY_DEV = None
 
+# DID Resolution v1 (W3C CR Draft, 2026-10-01), section 4.4: a DID that does
+# not exist answers with "didResolutionMetadata: error object with type set to
+# https://www.w3.org/ns/did#NOT_FOUND".
+DID_NOT_FOUND_TYPE = "https://www.w3.org/ns/did#NOT_FOUND"
+
+# Expected values a vector carried before, newest last. Kept in the vector so a
+# report that quotes an old expectation can still be traced to the day it
+# changed. The runner does not read them.
+EXPECTED_HISTORY = {
+    ("a well-formed identifier nobody registered is not found", "api"): [
+        {"replaced": "2026-10-12",
+         "expected": {"result": "NOT_FOUND", "http_status": 404,
+                      "reason_code": "did_not_found"},
+         "why": "Until moltrust-api #741 (2026-10-12) the API carried its code "
+                "under detail.error. A miss is now a DID resolution result "
+                "with an RFC 9457 error object, as section 4.4 of DID "
+                "Resolution v1 requires. detail.error still answers "
+                "did_not_found until 2027-01-10, but this vector reads the "
+                "form the specification names."},
+    ],
+}
+
 RESOLVE_CASES = [
     ("a registered identifier resolves to a DID document",
      "did:moltrust:d34ed796a4dc4698", "4.2", "RESOLVES",
@@ -200,7 +222,7 @@ RESOLVE_CASES = [
      "Section 3.1 uses this identifier as its example.", {}),
     ("a well-formed identifier nobody registered is not found",
      "did:moltrust:0000000000000000", "4.2", "NOT_FOUND",
-     {"api": (404, "did_not_found"), "driver": (404, "notFound")},
+     {"api": (404, DID_NOT_FOUND_TYPE), "driver": (404, "notFound")},
      "A conformant identifier that was never registered is absent, not "
      "malformed. Saying invalid here would send an implementer to check their "
      "string instead of their registration.", {}),
@@ -239,6 +261,8 @@ for title, did, sec, result, per_target, why, devs in RESOLVE_CASES:
               "rationale": why}
         if devs.get(tgt):
             kw["known_deviation"] = devs[tgt]
+        if (title, tgt) in EXPECTED_HISTORY:
+            kw["expected_history"] = EXPECTED_HISTORY[(title, tgt)]
         add(**kw)
 
 for method, did, why in FOREIGN:

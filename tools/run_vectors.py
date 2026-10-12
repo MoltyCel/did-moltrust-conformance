@@ -37,7 +37,8 @@ SYNTAX = re.compile(r"^did:moltrust:[0-9a-f]{16}$")
 
 # How each target names the same outcome.
 CODES = {
-    "api": {"RESOLVES": (200, None), "NOT_FOUND": (404, "did_not_found"),
+    "api": {"RESOLVES": (200, None),
+            "NOT_FOUND": (404, "https://www.w3.org/ns/did#NOT_FOUND"),
             "INVALID_DID": (400, "invalid_did"),
             "UNSUPPORTED_METHOD": (400, "unsupported_method")},
     "driver": {"RESOLVES": (200, None), "NOT_FOUND": (404, "notFound"),
@@ -71,9 +72,22 @@ def request(url, method="GET", body=None, timeout=20):
 
 
 def api_reason(body):
-    """The API carries its code under detail, which is an object since 2026-10-06."""
+    """The code the API answers with.
+
+    A resolve miss is a DID resolution result: since moltrust-api #741 the code
+    sits in didResolutionMetadata.error, and DID Resolution v1 section 4.4 makes
+    that an RFC 9457 object whose type names the error. The type is the code.
+    The body still carries detail.error = "did_not_found" until 2027-01-10;
+    the resolution metadata wins because it is the form the specification names.
+
+    Every other error carries its code under detail, an object since 2026-10-06.
+    """
     if not isinstance(body, dict):
         return None
+    meta = body.get("didResolutionMetadata")
+    if isinstance(meta, dict) and "error" in meta:
+        err = meta["error"]
+        return err.get("type") if isinstance(err, dict) else err
     d = body.get("detail")
     if isinstance(d, dict):
         return d.get("error")
