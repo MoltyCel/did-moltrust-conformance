@@ -39,7 +39,7 @@ vector is not a list.**
 | 2.2 | syntax of the method-specific identifier: length, case, hex, the `ext_` prefix | 14 |
 | 2.2 | the derivation clause: rule derived-sha256-ed25519-8 (from v0.2) takes the first 8 bytes of SHA-256 over the Ed25519 public key; assigned-opaque identifiers stay resolvable with no derivation claimed | 4 |
 | 2.2 | the read endpoints apply the same syntax as the resolver | 1 |
-| 4.2 | resolution outcomes: a document, `did_not_found`, `invalidDid`, an unknown method | 14 |
+| 4.2 | resolution outcomes: a document, `NOT_FOUND` (DID Resolution v1, section 4.4), `invalidDid`, an unknown method | 14 |
 | 6 | the cross-ecosystem bridge, `POST /identity/bridge-simple` | 1 |
 
 A resolution vector names exactly one target, the registry API or the Universal
