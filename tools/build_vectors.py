@@ -298,8 +298,7 @@ add(name="a lookup endpoint refuses an identifier outside section 2.2",
     expected={"result": "INVALID_DID", "http_status": 400},
     rationale="/identity/resolve refuses did:moltrust:vcone as invalid_did. "
               "Fifteen read sites accepted anything in [a-z0-9_-]{1,64} and "
-              "answered for it.",
-    known_deviation="lookup::read endpoints accept identifiers outside section 2.2")
+              "answered for it.")
 
 # --- section 6, the bridge -----------------------------------------------
 add(name="the bridge endpoint exists and is guarded",

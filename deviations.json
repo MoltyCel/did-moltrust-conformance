@@ -89,10 +89,18 @@
       "first_seen": "2026-10-08T06:28:00+00:00",
       "observable": true,
       "source": "did-conformance",
-      "status": "open",
+      "status": "closed",
       "what": "read endpoints accept identifiers outside section 2.2",
       "where": "validate_did_lookup() and DID_LOOKUP_PATTERN in app/main.py of moltrust-api at 2c62ddb00f93836c72e47fae3a6c13bcef0f11aa: thirteen calls (2215, 2308, 2650, 2968, 4671, 4980, 5382, 5426, 5527, 5548, 6063, 6458, 6963) and two direct uses (5805, 8000).",
-      "why": "The lookup pattern was [a-z0-9_-]{1,64}, kept so the pre-convention identifiers stayed readable after 2026-05-30. /identity/resolve refuses them under section 2.2 since #631, so the read endpoints answer for identifiers the resolver calls malformed. Observed 2026-10-08: GET /reputation/query/did:moltrust:vcone answered 200. MoltyCel/moltrust-api#660 changes it and is not merged."
+      "why": "The lookup pattern was [a-z0-9_-]{1,64}, kept so the pre-convention identifiers stayed readable after 2026-05-30. /identity/resolve refuses them under section 2.2 since #631, so the read endpoints answer for identifiers the resolver calls malformed. Observed 2026-10-08: GET /reputation/query/did:moltrust:vcone answered 200. MoltyCel/moltrust-api#660 changes it and is not merged.",
+      "closed_at": "2026-10-12T22:06:10+00:00",
+      "closed_because": "MoltyCel/moltrust-api#660 merged as 04f5d4a and deployed (deploy run 38314494697): DID_LOOKUP_PATTERN = DID_PATTERN, so the read endpoints apply the section 2.2 syntax the resolver applies. The ambassador, the one active agent on a pre-convention identifier, was reissued first as did:moltrust:214298170282752d (#771); did:moltrust:ambassador0001 stays registered. Verified against https://api.moltrust.ch: GET /reputation/query/did:moltrust:vcone answers 400.",
+      "closed_evidence": {
+        "commit": "04f5d4a",
+        "vectors": [
+          "did-lookup-a-lookup-endpoint-refuses-an-identifier-api"
+        ]
+      }
     },
     "spec::section 6 omits the X-API-Key the endpoint requires": {
       "check": "bridge",
