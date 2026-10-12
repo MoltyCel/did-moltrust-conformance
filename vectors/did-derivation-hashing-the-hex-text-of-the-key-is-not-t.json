@@ -1,0 +1,16 @@
+{
+  "name": "hashing the hex text of the key is not the derivation",
+  "description": "The derivation hashes the 32 raw key bytes. An implementation that hashes the 64-character hex string produces a well-formed identifier that does not derive from the key.",
+  "section_ref": "2.2",
+  "check": "derivation",
+  "target": "none",
+  "input": {
+    "public_key_hex": "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a",
+    "did": "did:moltrust:4ebbe859de728e52"
+  },
+  "expected": {
+    "result": "NOT_DERIVED"
+  },
+  "rationale": "The likeliest way to get the clause wrong while every syntax check stays green. A vector that only ever passes measures nothing.",
+  "id": "did-derivation-hashing-the-hex-text-of-the-key-is-not-t"
+}

@@ -21,6 +21,10 @@ OUT = ROOT / "vectors"
 # key rather than a made-up hex string. Generated once, never a signing key.
 SAMPLE_PUBKEY = "3b6a27bcceb6a42d62a3a8d02a6f0d73653215771de243a63ac048a18b59da29"
 
+# The public key of RFC 8032 section 7.1, test 1. Section 2.2 (v0.2) works its
+# example from it, so the specification and this table quote the same bytes.
+RFC8032_TEST1_PUBKEY = "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a"
+
 
 def derive(pubkey_hex: str) -> str:
     """Section 2.2: the first 8 bytes of SHA-256 over the public key."""
@@ -137,17 +141,47 @@ add(name="the identifier follows from the public key",
               "reference a registered DID is compared against.",
     )
 
-add(name="a registered DID derives from its own published key",
-    description="For every DID the registry resolves with a publicKeyHex, the "
-                "method-specific identifier must be the first 8 bytes of "
-                "SHA-256 over that key.",
+add(name="the RFC 8032 test key gives the identifier of the specification example",
+    description="Section 2.2 (v0.2) works its example of rule "
+                "derived-sha256-ed25519-8 from the "
+                "public key of RFC 8032 section 7.1 test 1. The identifier has "
+                "to be the one the text prints.",
+    section_ref="2.2", check="derivation", target="none",
+    input={"public_key_hex": RFC8032_TEST1_PUBKEY,
+           "did": "did:moltrust:21fe31dfa154a261"},
+    expected={"result": "CONFORMS"},
+    rationale="The value 21fe31dfa154a261 is written into the specification, "
+              "computed with openssl over the 32 raw bytes. This vector holds "
+              "the text and the arithmetic to each other.",
+    )
+
+add(name="hashing the hex text of the key is not the derivation",
+    description="The derivation hashes the 32 raw key bytes. An implementation "
+                "that hashes the 64-character hex string produces a "
+                "well-formed identifier that does not derive from the key.",
+    section_ref="2.2", check="derivation", target="none",
+    input={"public_key_hex": RFC8032_TEST1_PUBKEY,
+           "did": "did:moltrust:"
+                  + hashlib.sha256(RFC8032_TEST1_PUBKEY.encode()).hexdigest()[:16]},
+    expected={"result": "NOT_DERIVED"},
+    rationale="The likeliest way to get the clause wrong while every syntax "
+              "check stays green. A vector that only ever passes measures "
+              "nothing.",
+    )
+
+add(name="an assigned identifier stays resolvable and claims no derivation",
+    description="Section 2.2 keeps every identifier issued before v0.2 "
+                "(rule assigned-opaque) resolvable and gives no assurance that "
+                "it derives from a key. The example identifier of section 2.2 "
+                "is one of them.",
     section_ref="2.2", check="derivation", target="api",
     input={"did": "did:moltrust:d34ed796a4dc4698"},
-    expected={"result": "CONFORMS"},
-    rationale="Section 2.2 ties the identifier to the key. A registry that "
-              "issues identifiers from another source produces DIDs that cannot "
-              "be checked against their own key material.",
-    known_deviation="derivation::identifiers are not derived from the key")
+    expected={"result": "ASSIGNED"},
+    rationale="The carve-out has two halves a run can watch: the identifier "
+              "still resolves, and the resolution result does not report it as "
+              "derived. Whether it happens to recompute from its key "
+              "is not asked, because the text promises nothing either way.",
+    )
 
 # --- section 4.2, resolution outcomes ------------------------------------
 # One vector, one target, one claim. A vector that asked two services at once
@@ -225,6 +259,23 @@ add(name="the organisation did:web identifier still resolves",
     rationale="The registry serves did:web for its own root. This vector is "
               "here so a change to the did:moltrust branches cannot quietly "
               "take did:web with it.")
+
+# --- section 2.2 on the read endpoints ----------------------------------
+# /reputation/query is the lookup asked because it reads without touching the
+# agent row: /identity/badge and /agents/{did}/erc8004 write agents.last_seen,
+# so a conformance run against them would make the agents it names look active.
+add(name="a lookup endpoint refuses an identifier outside section 2.2",
+    description="The read endpoints that take a DID in the path apply the "
+                "section 2.2 syntax, the same as the resolver. A lookup that "
+                "answers for an identifier the resolver calls malformed "
+                "contradicts it.",
+    section_ref="2.2", check="lookup", target="api",
+    input={"did": "did:moltrust:vcone", "path": "/reputation/query/{did}"},
+    expected={"result": "INVALID_DID", "http_status": 400},
+    rationale="/identity/resolve refuses did:moltrust:vcone as invalid_did. "
+              "Fifteen read sites accepted anything in [a-z0-9_-]{1,64} and "
+              "answered for it.",
+    known_deviation="lookup::read endpoints accept identifiers outside section 2.2")
 
 # --- section 6, the bridge -----------------------------------------------
 add(name="the bridge endpoint exists and is guarded",
